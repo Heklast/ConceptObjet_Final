@@ -9,6 +9,7 @@ public class LivingBeing {
 	private int energyPoints;
 	private Direction lastDirectionTaken;
 	private Color color;
+        private Roles role;
         
         private int speed;
         private int strength;
