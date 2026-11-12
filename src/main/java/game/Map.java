@@ -1,5 +1,8 @@
 package game;
 
+import game.beings.Color;
+import game.beings.LivingBeing;
+
 public class Map {
     private int sizeX;
     private int sizeY;
@@ -12,8 +15,24 @@ public class Map {
         
         for(int i=0;i<sizeY;i++){
             for(int j=0;j<sizeX;j++){
-                Square square = new Square(i,j);
+                Color color = Color.RESET;
+                
+                if(i<3 && j<3){
+                    color=Color.GREEN;
+                }
+                if(i>=sizeY-3 && j<3){
+                    color = Color.ORANGE;
+                }
+                if(i<3 && j>=sizeX-3){
+                    color = Color.PURPLE;
+                }
+                if(i>=sizeY-3 && j>=sizeX-3){
+                    color = Color.BLUE;
+                }
+                
+                Square square = new Square(i,j,color);
                 squares[i][j]=square;
+                
             }
         }
      
@@ -21,12 +40,20 @@ public class Map {
     
     public void display(){
         System.out.println("Map:");
-        for(int i=0;i<sizeY;i++){
-            for(int j=0;j<sizeX;j++){
-                System.out.print("o");
+        for (Square[] square1 : squares) {
+            for (Square square : square1) {
+                square.display();
             }
             System.out.println("");
         }
+    }
+    
+    public void moveCharacter(LivingBeing character,int newPosX,int newPosY){
+        int oldX = character.getPosX();
+        int oldY = character.getPosY();
+        
+        squares[oldY][oldX].setOccupedBy(null);
+        squares[newPosY][newPosX].setOccupedBy(character);
     }
        
         

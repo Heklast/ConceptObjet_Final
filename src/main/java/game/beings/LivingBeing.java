@@ -1,11 +1,12 @@
 package game.beings;
 import game.Direction;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class LivingBeing {
 	private int posX;
 	private int posY;
-	private String[] messages;
+	private ArrayList<String> messages;
 	private int energyPoints;
 	private Direction lastDirectionTaken;
 	private Color color;
@@ -15,6 +16,12 @@ public class LivingBeing {
         private int strength;
         private int memory;
         
+        public LivingBeing(int initialY, int initialX){
+            posX=initialX;
+            posY=initialY;
+            messages = new ArrayList<>();
+            lastDirectionTaken = Direction.SE;
+        }
         
         public void move(){
             Random rand = new Random();
@@ -44,5 +51,21 @@ public class LivingBeing {
             if(distanceProbability<0.2+speed/10) distance++;
 
             System.out.println(nextDirection);
+            System.out.println(distance);
         }
+        
+        public void addMessage(String message){
+            this.messages.add(message);
+        }
+
+    public int getPosX() {
+        return posX;
+    }
+
+    public int getPosY() {
+        return posY;
+    }
+        
+        
+        
 }
