@@ -17,6 +17,7 @@ public class Game {
     private ArrayList<LivingBeing> characters;
     private Set<String> messages;
     private Map map;
+    private ConsoleDisplay display;
 
     public Game() {
         this(16, 10, 5);
@@ -26,6 +27,7 @@ public class Game {
         Map carte = new Map(sizeX, sizeY);
         this.map = carte;
         
+        this.display = new ConsoleDisplay(this,1000);
         
         characters = new ArrayList<>(); 
         for (int i = 0; i < nbCharactersByTeam; i++) {
@@ -100,9 +102,8 @@ public class Game {
         while(nbTurns<50){
             System.out.println("Press 'Enter' for next turn");
             sc.nextLine();
-            System.out.println("Turn n°"+nbTurns);
             this.newTurn();
-            this.map.display();
+            display.displayTurn(nbTurns, map);
             nbTurns++;
         }
     }

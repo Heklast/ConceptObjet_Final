@@ -30,7 +30,7 @@ public class Map {
                     color = Color.BLUE;
                 }
                 
-                Square square = new Square(i,j,color);
+                Square square = new Square(i,j,color,this);
                 squares[i][j]=square;
                 
             }

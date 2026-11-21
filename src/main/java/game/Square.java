@@ -11,13 +11,15 @@ public class Square {
     private final Color owner;
     private final SquareTypes type;
     private LivingBeing occupedBy;
+    private Map map;
    
     
-    public Square(int posX,int posY,Color owner){
+    public Square(int posX,int posY,Color owner,Map map){
         this.x=posX;
         this.y=posY;
         this.type=SquareTypes.GRASS;
         this.owner= owner;
+        this.map = map;
     }
 
     public Color getOwner() {
@@ -47,6 +49,14 @@ public class Square {
     
     public LivingBeing getOccupedBy(){
         return this.occupedBy;
+    }
+
+    public Map getMap() {
+        return map;
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
     }
     
     
