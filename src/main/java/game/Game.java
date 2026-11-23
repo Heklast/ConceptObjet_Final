@@ -5,6 +5,8 @@ import game.beings.Goblin;
 import game.beings.Human;
 import game.beings.LivingBeing;
 import game.beings.Orch;
+import game.events.EventFactory;
+import game.events.RandomEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,10 +16,15 @@ import java.util.Set;
 
 public class Game {
 
+    private static final int MAX_TURNS = 50;
+    private static final int EARLIEST_EVENT_TURN = 10;
+    private static final int LATEST_EVENT_TURN = 40;
+
     private ArrayList<LivingBeing> characters;
     private Set<String> messages;
     private Map map;
     private ConsoleDisplay display;
+    private final int eventTurn;
 
     public Game() {
         this(16, 10, 5);
@@ -28,6 +35,8 @@ public class Game {
         this.map = carte;
         
         this.display = new ConsoleDisplay(this,1000);
+
+        this.eventTurn = RandomGenerator.nextInt(EARLIEST_EVENT_TURN, LATEST_EVENT_TURN);
         
         characters = new ArrayList<>(); 
         for (int i = 0; i < nbCharactersByTeam; i++) {
@@ -99,10 +108,13 @@ public class Game {
         int nbTurns = 0;
         Scanner sc = new Scanner(System.in);
         
-        while(nbTurns<50){
+        while(nbTurns<MAX_TURNS){
             System.out.println("Press 'Enter' for next turn");
             sc.nextLine();
             this.newTurn();
+            if (nbTurns == eventTurn) {
+                triggerRandomEvent(nbTurns);
+            }
             display.displayTurn(nbTurns, map);
             nbTurns++;
         }
@@ -121,7 +133,15 @@ public class Game {
     private void newTurn(){
         
         for(LivingBeing character: characters){
-            character.move();
+            if (!character.isDead()) {
+                character.move();
+            }
         }
+    }
+
+    private void triggerRandomEvent(int turn) {
+        RandomEvent event = EventFactory.createRandomEvent();
+        event.apply(map, characters);
+        display.displayEvent(turn, event);
     }
 }

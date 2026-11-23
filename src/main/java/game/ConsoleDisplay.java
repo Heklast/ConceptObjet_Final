@@ -4,6 +4,7 @@
  */
 package game;
 
+import game.events.RandomEvent;
 
 public class ConsoleDisplay {
     
@@ -18,5 +19,9 @@ public class ConsoleDisplay {
     public void displayTurn(int turn,Map map){
         System.out.println("Turn n°"+turn);
         map.display();
+    }
+
+    public void displayEvent(int turn, RandomEvent event) {
+        System.out.println("*** Turn " + turn + " : " + event.getName() + " ! " + event.describeEffect() + " ***");
     }
 }

@@ -57,6 +57,9 @@ public class Square {
 
         if(occupedBy!=null){
             caractere=occupedBy.getClass().getSimpleName().toLowerCase().charAt(0);
+            if(occupedBy.isDead()){
+                caractere='x';
+            }
         }
         
         System.out.print(owner.getCode()+caractere+Color.RESET.getCode());
