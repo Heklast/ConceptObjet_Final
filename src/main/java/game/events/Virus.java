@@ -21,6 +21,16 @@ public class Virus extends RandomEvent {
 
     @Override
     public void apply(Map map, List<LivingBeing> characters) {
-        throw new UnsupportedOperationException("Virus effect is not implemented yet");
+        for (LivingBeing being : characters) {
+            if (isVulnerable(map, being)) {
+                being.die();
+            }
+        }
+    }
+
+    private boolean isVulnerable(Map map, LivingBeing being) {
+        return !being.isDead()
+                && !map.isInOwnSafeZone(being)
+                && being.getEnergyPoints() < ENERGY_THRESHOLD * being.getMaxEnergyPoints();
     }
 }
