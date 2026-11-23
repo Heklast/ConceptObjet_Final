@@ -1,10 +1,7 @@
 package game.events;
 
 import game.Map;
-import game.RandomGenerator;
-import game.Square;
 import game.beings.LivingBeing;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Meteorite extends RandomEvent {
@@ -26,12 +23,7 @@ public class Meteorite extends RandomEvent {
 
     @Override
     public void apply(Map map, List<LivingBeing> characters) {
-        List<Square> candidates = findLandingSquares(map);
-        numberOfRocksPlaced = Math.min(NUMBER_OF_ROCKS, candidates.size());
-        for (int i = 0; i < numberOfRocksPlaced; i++) {
-            int index = RandomGenerator.nextInt(0, candidates.size() - 1);
-            candidates.remove(index).placeRock();
-        }
+        numberOfRocksPlaced = map.placeRandomRocks(NUMBER_OF_ROCKS);
     }
 
     @Override
@@ -40,18 +32,5 @@ public class Meteorite extends RandomEvent {
             return "1 rock fell";
         }
         return numberOfRocksPlaced + " rocks fell";
-    }
-
-    private List<Square> findLandingSquares(Map map) {
-        List<Square> landingSquares = new ArrayList<>();
-        for (int y = 0; y < map.getSizeY(); y++) {
-            for (int x = 0; x < map.getSizeX(); x++) {
-                Square square = map.getSquare(x, y);
-                if (square.isFree() && !square.isSafeZone()) {
-                    landingSquares.add(square);
-                }
-            }
-        }
-        return landingSquares;
     }
 }

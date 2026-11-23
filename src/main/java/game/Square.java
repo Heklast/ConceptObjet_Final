@@ -22,6 +22,14 @@ public class Square {
         this.map = map;
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
     public Color getOwner() {
         return owner;
     }
@@ -49,7 +57,7 @@ public class Square {
         Character caractere = Optional.ofNullable(this.owner)
                                 .filter(o -> !o.toString().isEmpty())
                                 .map(o -> o.toString().charAt(0))
-                                .orElse('o');
+                                .orElse('.');
 
         if(type==SquareTypes.ROCK){
             caractere='#';

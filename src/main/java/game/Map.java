@@ -2,6 +2,8 @@ package game;
 
 import game.beings.Color;
 import game.beings.LivingBeing;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Map {
     private int sizeX;
@@ -30,7 +32,7 @@ public class Map {
                     color = Color.BLUE;
                 }
                 
-                Square square = new Square(i,j,color,this);
+                Square square = new Square(j,i,color,this);
                 squares[i][j]=square;
                 
             }
@@ -67,12 +69,55 @@ public class Map {
         return getSquare(being.getPosX(), being.getPosY()).getOwner() == being.getColor();
     }
 
+    public List<Square> getSafeZoneSquares(Color color) {
+        List<Square> zone = new ArrayList<>();
+        for (Square[] row : squares) {
+            for (Square square : row) {
+                if (square.getOwner() == color) {
+                    zone.add(square);
+                }
+            }
+        }
+        return zone;
+    }
+
+    public List<Square> getFreeSquaresOutsideSafeZones() {
+        List<Square> freeSquares = new ArrayList<>();
+        for (Square[] row : squares) {
+            for (Square square : row) {
+                if (square.isFree() && !square.isSafeZone()) {
+                    freeSquares.add(square);
+                }
+            }
+        }
+        return freeSquares;
+    }
+
+    public int placeRandomRocks(int numberOfRocks) {
+        if (numberOfRocks < 0) {
+            throw new IllegalArgumentException("numberOfRocks (" + numberOfRocks + ") must not be negative");
+        }
+        List<Square> candidates = getFreeSquaresOutsideSafeZones();
+        int rocksPlaced = Math.min(numberOfRocks, candidates.size());
+        for (int i = 0; i < rocksPlaced; i++) {
+            int index = RandomGenerator.nextInt(0, candidates.size() - 1);
+            candidates.remove(index).placeRock();
+        }
+        return rocksPlaced;
+    }
+
     public void moveCharacter(LivingBeing character,int newPosX,int newPosY){
-        int oldX = character.getPosX();
-        int oldY = character.getPosY();
-        
-        squares[oldY][oldX].setOccupedBy(null);
-        squares[newPosY][newPosX].setOccupedBy(character);
+        Square target = getSquare(newPosX, newPosY);
+        if (target.getOccupedBy() != character && !target.isFree()) {
+            throw new IllegalStateException("square (" + newPosX + ", " + newPosY + ") is not free");
+        }
+
+        Square origin = getSquare(character.getPosX(), character.getPosY());
+        if (origin.getOccupedBy() == character) {
+            origin.setOccupedBy(null);
+        }
+        target.setOccupedBy(character);
+        character.setPosition(newPosX, newPosY);
     }
        
         

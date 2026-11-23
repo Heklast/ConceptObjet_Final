@@ -73,6 +73,11 @@ public class LivingBeing {
         return posY;
     }
 
+    public void setPosition(int newPosX, int newPosY) {
+        posX = newPosX;
+        posY = newPosY;
+    }
+
     public Color getColor() {
         return color;
     }
