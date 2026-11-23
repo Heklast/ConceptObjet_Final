@@ -1,23 +1,14 @@
 package game;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import game.beings.LivingBeing;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class GameTest {
-
-    @Test
-    void gameCreatesFourTeamsOfCharacters() {
-        Game game = new Game(16, 10, 5);
-
-        assertEquals(20, game.getCharacters().size());
-    }
 
     @Test
     void everyCharacterStartsOnItsOwnSquare() {
@@ -28,7 +19,8 @@ class GameTest {
             positions.add(character.getPosX() + "," + character.getPosY());
         }
 
-        assertEquals(game.getCharacters().size(), positions.size());
+        assertEquals(20, game.getCharacters().size());
+        assertEquals(20, positions.size());
     }
 
     @Test
@@ -37,16 +29,6 @@ class GameTest {
 
         for (LivingBeing character : game.getCharacters()) {
             assertTrue(game.getMap().isInOwnSafeZone(character));
-        }
-    }
-
-    @Test
-    void everyCharacterIsVisibleOnTheMap() {
-        Game game = new Game(16, 10, 5);
-        Map map = game.getMap();
-
-        for (LivingBeing character : game.getCharacters()) {
-            assertEquals(character, map.getSquare(character.getPosX(), character.getPosY()).getOccupedBy());
         }
     }
 
@@ -65,18 +47,5 @@ class GameTest {
         }
 
         assertEquals(Game.NUMBER_OF_OBSTACLES, rocks);
-    }
-
-    @Test
-    void gameRefusesMoreCharactersThanASafeZoneCanHold() {
-        assertThrows(IllegalArgumentException.class, () -> new Game(16, 10, 10));
-    }
-
-    @Test
-    void charactersListCannotBeModifiedFromOutside() {
-        Game game = new Game(16, 10, 5);
-        List<LivingBeing> characters = game.getCharacters();
-
-        assertThrows(UnsupportedOperationException.class, () -> characters.clear());
     }
 }

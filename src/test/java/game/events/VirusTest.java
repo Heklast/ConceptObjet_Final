@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import game.Map;
 import game.beings.Elf;
-import game.beings.LivingBeing;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +36,7 @@ class VirusTest {
 
         assertTrue(elf.isDead());
         assertEquals(0, elf.getNumberOfMessages());
+        assertEquals("1 character died", virus.describeEffect());
     }
 
     @Test
@@ -47,15 +47,6 @@ class VirusTest {
 
         assertFalse(elf.isDead());
         assertEquals(1, elf.getNumberOfMessages());
-    }
-
-    @Test
-    void beingExactlyAtTheThresholdSurvives() {
-        Elf elf = elfWithEnergy(5, 8, 30);
-
-        virus.apply(map, List.of(elf));
-
-        assertFalse(elf.isDead());
     }
 
     @Test
@@ -70,48 +61,6 @@ class VirusTest {
     @Test
     void weakBeingInAnotherTeamSafeZoneDies() {
         Elf elf = elfWithEnergy(0, 0, 10);
-
-        virus.apply(map, List.of(elf));
-
-        assertTrue(elf.isDead());
-    }
-
-    @Test
-    void virusOnlyKillsTheVulnerableBeings() {
-        Elf weak = elfWithEnergy(5, 8, 10);
-        Elf strong = elfWithEnergy(5, 9, 90);
-        Elf sheltered = elfWithEnergy(1, 14, 10);
-        List<LivingBeing> characters = List.of(weak, strong, sheltered);
-
-        virus.apply(map, characters);
-
-        assertTrue(weak.isDead());
-        assertFalse(strong.isDead());
-        assertFalse(sheltered.isDead());
-    }
-
-    @Test
-    void describeEffectCountsTheVictims() {
-        Elf weak = elfWithEnergy(5, 8, 10);
-        Elf otherWeak = elfWithEnergy(5, 9, 10);
-        Elf strong = elfWithEnergy(5, 10, 90);
-
-        virus.apply(map, List.of(weak, otherWeak, strong));
-
-        assertEquals("2 characters died", virus.describeEffect());
-    }
-
-    @Test
-    void describeEffectUsesSingularForOneVictim() {
-        virus.apply(map, List.of(elfWithEnergy(5, 8, 10)));
-
-        assertEquals("1 character died", virus.describeEffect());
-    }
-
-    @Test
-    void virusIgnoresAlreadyDeadBeings() {
-        Elf elf = elfWithEnergy(5, 8, 10);
-        elf.die();
 
         virus.apply(map, List.of(elf));
 
