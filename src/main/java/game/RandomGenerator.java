@@ -1,5 +1,7 @@
 package game;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 public final class RandomGenerator {
@@ -29,5 +31,9 @@ public final class RandomGenerator {
             throw new IllegalArgumentException("probability (" + probability + ") must be between 0 and 1");
         }
         return random.nextDouble() < probability;
+    }
+
+    public static void shuffle(List<?> list) {
+        Collections.shuffle(list, random);
     }
 }

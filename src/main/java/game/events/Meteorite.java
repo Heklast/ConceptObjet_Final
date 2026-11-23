@@ -10,6 +10,8 @@ public class Meteorite extends RandomEvent {
 
     private static int instanceCount = 0;
 
+    private int numberOfRocksPlaced;
+
     public Meteorite() {
         super("Meteorite");
         instanceCount++;
@@ -21,6 +23,14 @@ public class Meteorite extends RandomEvent {
 
     @Override
     public void apply(Map map, List<LivingBeing> characters) {
-        throw new UnsupportedOperationException("Meteorite effect is not implemented yet");
+        numberOfRocksPlaced = map.placeRandomRocks(NUMBER_OF_ROCKS);
+    }
+
+    @Override
+    public String describeEffect() {
+        if (numberOfRocksPlaced == 1) {
+            return "1 rock fell";
+        }
+        return numberOfRocksPlaced + " rocks fell";
     }
 }
