@@ -24,4 +24,16 @@ public class ConsoleDisplay {
     public void displayEvent(int turn, RandomEvent event) {
         System.out.println("*** Turn " + turn + " : " + event.getName() + " ! " + event.describeEffect() + " ***");
     }
+
+    public void displayEnd(int numberOfTurns) {
+        System.out.println("End of the game after " + numberOfTurns + " turns");
+    }
+
+    public void pause() {
+        try {
+            Thread.sleep(delayMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

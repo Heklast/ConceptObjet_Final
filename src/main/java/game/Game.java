@@ -1,5 +1,6 @@
 package game;
 
+import game.beings.Color;
 import game.beings.Elf;
 import game.beings.Goblin;
 import game.beings.Human;
@@ -11,14 +12,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Set;
 
 public class Game {
 
-    private static final int MAX_TURNS = 50;
+    public static final int MAX_TURNS = 50;
+    public static final int NUMBER_OF_OBSTACLES = 10;
     private static final int EARLIEST_EVENT_TURN = 10;
     private static final int LATEST_EVENT_TURN = 40;
+    private static final int DELAY_BETWEEN_TURNS_MS = 1000;
 
     private ArrayList<LivingBeing> characters;
     private Set<String> messages;
@@ -34,26 +36,24 @@ public class Game {
         Map carte = new Map(sizeX, sizeY);
         this.map = carte;
         
-        this.display = new ConsoleDisplay(this,1000);
+        this.display = new ConsoleDisplay(this,DELAY_BETWEEN_TURNS_MS);
 
         this.eventTurn = RandomGenerator.nextInt(EARLIEST_EVENT_TURN, LATEST_EVENT_TURN);
-        
-        characters = new ArrayList<>(); 
+
+        characters = new ArrayList<>();
+        List<Square> elfZone = getTeamZone(Color.PURPLE, nbCharactersByTeam);
+        List<Square> goblinZone = getTeamZone(Color.GREEN, nbCharactersByTeam);
+        List<Square> humanZone = getTeamZone(Color.BLUE, nbCharactersByTeam);
+        List<Square> orchZone = getTeamZone(Color.ORANGE, nbCharactersByTeam);
         for (int i = 0; i < nbCharactersByTeam; i++) {
-            Elf elf =new Elf((int) Math.ceil(i/3),sizeX-2+(i%2));
-            characters.add(elf);
-            map.moveCharacter(elf, elf.getPosX(), elf.getPosY());
-            Goblin goblin = new Goblin((int)Math.ceil(i/3),1+(i%2));
-            characters.add(goblin);
-            map.moveCharacter(goblin, goblin.getPosX(), goblin.getPosY());
-            Human human = new Human(sizeY-2+(i%2),sizeX-2+(i%2));
-            characters.add(human);
-            map.moveCharacter(human, human.getPosX(), human.getPosY());
-            Orch orch = new Orch(sizeY-2,(int)Math.ceil(i+1/3));
-            characters.add(orch);
-            map.moveCharacter(orch, orch.getPosX(), orch.getPosY());
+            addCharacter(new Elf(elfZone.get(i).getY(), elfZone.get(i).getX()));
+            addCharacter(new Goblin(goblinZone.get(i).getY(), goblinZone.get(i).getX()));
+            addCharacter(new Human(humanZone.get(i).getY(), humanZone.get(i).getX()));
+            addCharacter(new Orch(orchZone.get(i).getY(), orchZone.get(i).getX()));
         }
-        
+
+        map.placeRandomRocks(NUMBER_OF_OBSTACLES);
+
         messages = new HashSet<>();
 
         messages.addAll(List.of(
@@ -105,19 +105,36 @@ public class Game {
     
 
     public void startGame() {
-        int nbTurns = 0;
-        Scanner sc = new Scanner(System.in);
-        
-        while(nbTurns<MAX_TURNS){
-            System.out.println("Press 'Enter' for next turn");
-            sc.nextLine();
-            this.newTurn();
-            if (nbTurns == eventTurn) {
-                triggerRandomEvent(nbTurns);
+        for (int turn = 0; turn < MAX_TURNS; turn++) {
+            newTurn();
+            if (turn == eventTurn) {
+                triggerRandomEvent(turn);
             }
-            display.displayTurn(nbTurns, map);
-            nbTurns++;
+            display.displayTurn(turn, map);
+            display.pause();
         }
+        display.displayEnd(MAX_TURNS);
+    }
+
+    public List<LivingBeing> getCharacters() {
+        return List.copyOf(characters);
+    }
+
+    public Map getMap() {
+        return map;
+    }
+
+    private List<Square> getTeamZone(Color color, int nbCharactersByTeam) {
+        List<Square> zone = map.getSafeZoneSquares(color);
+        if (nbCharactersByTeam < 0 || nbCharactersByTeam > zone.size()) {
+            throw new IllegalArgumentException("nbCharactersByTeam (" + nbCharactersByTeam + ") must be between 0 and " + zone.size());
+        }
+        return zone;
+    }
+
+    private void addCharacter(LivingBeing character) {
+        characters.add(character);
+        map.moveCharacter(character, character.getPosX(), character.getPosY());
     }
     
     
@@ -131,7 +148,7 @@ public class Game {
     }
     
     private void newTurn(){
-        
+        RandomGenerator.shuffle(characters);
         for(LivingBeing character: characters){
             if (!character.isDead()) {
                 character.move();

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class RandomGeneratorTest {
@@ -64,6 +66,29 @@ class RandomGeneratorTest {
     void chanceRejectsInvalidProbability() {
         assertThrows(IllegalArgumentException.class, () -> RandomGenerator.chance(1.5));
         assertThrows(IllegalArgumentException.class, () -> RandomGenerator.chance(-0.1));
+    }
+
+    @Test
+    void shuffleKeepsTheSameElements() {
+        List<Integer> list = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6, 7, 8));
+
+        RandomGenerator.shuffle(list);
+
+        assertEquals(8, list.size());
+        assertTrue(list.containsAll(List.of(1, 2, 3, 4, 5, 6, 7, 8)));
+    }
+
+    @Test
+    void shuffleWithSameSeedGivesSameOrder() {
+        List<Integer> first = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6, 7, 8));
+        List<Integer> second = new ArrayList<>(first);
+
+        RandomGenerator.setSeed(42);
+        RandomGenerator.shuffle(first);
+        RandomGenerator.setSeed(42);
+        RandomGenerator.shuffle(second);
+
+        assertEquals(first, second);
     }
 
     @Test
