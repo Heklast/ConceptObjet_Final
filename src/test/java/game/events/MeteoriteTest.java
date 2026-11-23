@@ -70,10 +70,21 @@ class MeteoriteTest {
     @Test
     void meteoriteOnAMapWithoutFreeSquaresDoesNothing() {
         Map map = new Map(6, 6);
+        Meteorite meteorite = new Meteorite();
 
-        new Meteorite().apply(map, List.of());
+        meteorite.apply(map, List.of());
 
         assertEquals(0, countRocks(map));
+        assertEquals("0 rocks fell", meteorite.describeEffect());
+    }
+
+    @Test
+    void describeEffectCountsTheRocks() {
+        Meteorite meteorite = new Meteorite();
+
+        meteorite.apply(new Map(16, 10), List.of());
+
+        assertEquals(Meteorite.NUMBER_OF_ROCKS + " rocks fell", meteorite.describeEffect());
     }
 
     @Test

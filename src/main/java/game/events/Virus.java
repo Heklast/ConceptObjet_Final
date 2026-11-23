@@ -10,6 +10,8 @@ public class Virus extends RandomEvent {
 
     private static int instanceCount = 0;
 
+    private int numberOfVictims;
+
     public Virus() {
         super("Virus");
         instanceCount++;
@@ -21,11 +23,21 @@ public class Virus extends RandomEvent {
 
     @Override
     public void apply(Map map, List<LivingBeing> characters) {
+        numberOfVictims = 0;
         for (LivingBeing being : characters) {
             if (isVulnerable(map, being)) {
                 being.die();
+                numberOfVictims++;
             }
         }
+    }
+
+    @Override
+    public String describeEffect() {
+        if (numberOfVictims == 1) {
+            return "1 character died";
+        }
+        return numberOfVictims + " characters died";
     }
 
     private boolean isVulnerable(Map map, LivingBeing being) {

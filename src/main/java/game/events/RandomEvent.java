@@ -27,4 +27,6 @@ public abstract class RandomEvent {
     }
 
     public abstract void apply(Map map, List<LivingBeing> characters);
+
+    public abstract String describeEffect();
 }

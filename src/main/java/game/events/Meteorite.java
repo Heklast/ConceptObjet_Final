@@ -13,6 +13,8 @@ public class Meteorite extends RandomEvent {
 
     private static int instanceCount = 0;
 
+    private int numberOfRocksPlaced;
+
     public Meteorite() {
         super("Meteorite");
         instanceCount++;
@@ -25,11 +27,19 @@ public class Meteorite extends RandomEvent {
     @Override
     public void apply(Map map, List<LivingBeing> characters) {
         List<Square> candidates = findLandingSquares(map);
-        int rocksToPlace = Math.min(NUMBER_OF_ROCKS, candidates.size());
-        for (int i = 0; i < rocksToPlace; i++) {
+        numberOfRocksPlaced = Math.min(NUMBER_OF_ROCKS, candidates.size());
+        for (int i = 0; i < numberOfRocksPlaced; i++) {
             int index = RandomGenerator.nextInt(0, candidates.size() - 1);
             candidates.remove(index).placeRock();
         }
+    }
+
+    @Override
+    public String describeEffect() {
+        if (numberOfRocksPlaced == 1) {
+            return "1 rock fell";
+        }
+        return numberOfRocksPlaced + " rocks fell";
     }
 
     private List<Square> findLandingSquares(Map map) {

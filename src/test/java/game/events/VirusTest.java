@@ -91,6 +91,24 @@ class VirusTest {
     }
 
     @Test
+    void describeEffectCountsTheVictims() {
+        Elf weak = elfWithEnergy(5, 8, 10);
+        Elf otherWeak = elfWithEnergy(5, 9, 10);
+        Elf strong = elfWithEnergy(5, 10, 90);
+
+        virus.apply(map, List.of(weak, otherWeak, strong));
+
+        assertEquals("2 characters died", virus.describeEffect());
+    }
+
+    @Test
+    void describeEffectUsesSingularForOneVictim() {
+        virus.apply(map, List.of(elfWithEnergy(5, 8, 10)));
+
+        assertEquals("1 character died", virus.describeEffect());
+    }
+
+    @Test
     void virusIgnoresAlreadyDeadBeings() {
         Elf elf = elfWithEnergy(5, 8, 10);
         elf.die();
