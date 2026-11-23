@@ -9,7 +9,7 @@ public class Square {
     private final int x;
     private final int y;
     private final Color owner;
-    private final SquareTypes type;
+    private SquareTypes type;
     private LivingBeing occupedBy;
     private Map map;
    
@@ -29,12 +29,31 @@ public class Square {
     public SquareTypes getType() {
         return type;
     }
+
+    public boolean isSafeZone() {
+        return owner != Color.RESET;
+    }
+
+    public boolean isFree() {
+        return type == SquareTypes.GRASS && occupedBy == null;
+    }
+
+    public void placeRock() {
+        if (!isFree()) {
+            throw new IllegalStateException("a rock can only be placed on a free grass square");
+        }
+        type = SquareTypes.ROCK;
+    }
     
     public void display(){
         Character caractere = Optional.ofNullable(this.owner)
                                 .filter(o -> !o.toString().isEmpty())
                                 .map(o -> o.toString().charAt(0))
                                 .orElse('o');
+
+        if(type==SquareTypes.ROCK){
+            caractere='#';
+        }
 
         if(occupedBy!=null){
             caractere=occupedBy.getClass().getSimpleName().toLowerCase().charAt(0);

@@ -48,6 +48,25 @@ public class Map {
         }
     }
     
+    public int getSizeX() {
+        return sizeX;
+    }
+
+    public int getSizeY() {
+        return sizeY;
+    }
+
+    public Square getSquare(int x, int y) {
+        if (x < 0 || x >= sizeX || y < 0 || y >= sizeY) {
+            throw new IllegalArgumentException("square (" + x + ", " + y + ") is outside the map");
+        }
+        return squares[y][x];
+    }
+
+    public boolean isInOwnSafeZone(LivingBeing being) {
+        return getSquare(being.getPosX(), being.getPosY()).getOwner() == being.getColor();
+    }
+
     public void moveCharacter(LivingBeing character,int newPosX,int newPosY){
         int oldX = character.getPosX();
         int oldY = character.getPosY();
