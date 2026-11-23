@@ -33,6 +33,6 @@ public enum Direction {
     * @return direction
     */
     public Direction getModifiedValue(int modifier){
-        return  getDirectionOfNumber((this.value+modifier)%8);
+        return  getDirectionOfNumber(Math.floorMod(this.value+modifier, 8));
     }
 }
