@@ -4,23 +4,30 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class LivingBeing {
+	public static final int DEFAULT_MAX_ENERGY_POINTS = 100;
+
 	private int posX;
 	private int posY;
 	private ArrayList<String> messages;
 	private int energyPoints;
+	private final int maxEnergyPoints;
+	private boolean dead;
 	private Direction lastDirectionTaken;
-	private Color color;
+	private final Color color;
         private Roles role;
         
         private int speed;
         private int strength;
         private int memory;
         
-        public LivingBeing(int initialY, int initialX){
+        public LivingBeing(int initialY, int initialX, Color color){
             posX=initialX;
             posY=initialY;
             messages = new ArrayList<>();
             lastDirectionTaken = Direction.SE;
+            this.color = color;
+            maxEnergyPoints = DEFAULT_MAX_ENERGY_POINTS;
+            energyPoints = maxEnergyPoints;
         }
         
         public void move(){
@@ -64,6 +71,42 @@ public class LivingBeing {
 
     public int getPosY() {
         return posY;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public int getEnergyPoints() {
+        return energyPoints;
+    }
+
+    public int getMaxEnergyPoints() {
+        return maxEnergyPoints;
+    }
+
+    public int getNumberOfMessages() {
+        return messages.size();
+    }
+
+    public boolean isDead() {
+        return dead;
+    }
+
+    public void loseEnergyPoints(int amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("amount (" + amount + ") must not be negative");
+        }
+        energyPoints = Math.max(0, energyPoints - amount);
+        if (energyPoints == 0) {
+            die();
+        }
+    }
+
+    public void die() {
+        dead = true;
+        energyPoints = 0;
+        messages.clear();
     }
         
         
