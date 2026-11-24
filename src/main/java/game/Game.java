@@ -24,7 +24,7 @@ public class Game {
 
     private ArrayList<LivingBeing> characters;
     private Set<String> messages;
-    private Map map;
+    private GameMap map;
     private ConsoleDisplay display;
     private final int eventTurn;
 
@@ -33,7 +33,7 @@ public class Game {
     }
 
     public Game(int sizeX, int sizeY, int nbCharactersByTeam) {
-        Map carte = new Map(sizeX, sizeY);
+        GameMap carte = new GameMap(sizeX, sizeY);
         this.map = carte;
         
         this.display = new ConsoleDisplay(this,DELAY_BETWEEN_TURNS_MS);
@@ -120,7 +120,7 @@ public class Game {
         return List.copyOf(characters);
     }
 
-    public Map getMap() {
+    public GameMap getMap() {
         return map;
     }
 

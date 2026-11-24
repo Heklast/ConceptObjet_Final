@@ -5,12 +5,12 @@ import game.beings.LivingBeing;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Map {
+public class GameMap {
     private int sizeX;
     private int sizeY;
     private Square[][] squares;
         
-    public Map(int sizeX,int sizeY){
+    public GameMap(int sizeX,int sizeY){
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         squares = new Square[sizeY][sizeX];

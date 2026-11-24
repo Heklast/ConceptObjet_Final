@@ -2,7 +2,7 @@ package game.events;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import game.Map;
+import game.GameMap;
 import game.Square;
 import game.SquareTypes;
 import java.util.List;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class MeteoriteTest {
 
-    private int countRocks(Map map) {
+    private int countRocks(GameMap map) {
         int rocks = 0;
         for (int y = 0; y < map.getSizeY(); y++) {
             for (int x = 0; x < map.getSizeX(); x++) {
@@ -24,7 +24,7 @@ class MeteoriteTest {
 
     @Test
     void meteoritePlacesTheExpectedNumberOfRocks() {
-        Map map = new Map(16, 10);
+        GameMap map = new GameMap(16, 10);
         Meteorite meteorite = new Meteorite();
 
         meteorite.apply(map, List.of());
@@ -36,7 +36,7 @@ class MeteoriteTest {
     @Test
     void rocksNeverFallInASafeZone() {
         for (int i = 0; i < 50; i++) {
-            Map map = new Map(16, 10);
+            GameMap map = new GameMap(16, 10);
 
             new Meteorite().apply(map, List.of());
 

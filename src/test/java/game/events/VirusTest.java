@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import game.Map;
+import game.GameMap;
 import game.beings.Elf;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,12 +12,12 @@ import org.junit.jupiter.api.Test;
 
 class VirusTest {
 
-    private Map map;
+    private GameMap map;
     private Virus virus;
 
     @BeforeEach
     void setUp() {
-        map = new Map(16, 10);
+        map = new GameMap(16, 10);
         virus = new Virus();
     }
 

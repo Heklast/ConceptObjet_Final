@@ -1,6 +1,6 @@
 package game.events;
 
-import game.Map;
+import game.GameMap;
 import game.beings.LivingBeing;
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class Meteorite extends RandomEvent {
     }
 
     @Override
-    public void apply(Map map, List<LivingBeing> characters) {
+    public void apply(GameMap map, List<LivingBeing> characters) {
         numberOfRocksPlaced = map.placeRandomRocks(NUMBER_OF_ROCKS);
     }
 

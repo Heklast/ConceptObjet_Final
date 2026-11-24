@@ -1,6 +1,6 @@
 package game.events;
 
-import game.Map;
+import game.GameMap;
 import game.beings.LivingBeing;
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class Virus extends RandomEvent {
     }
 
     @Override
-    public void apply(Map map, List<LivingBeing> characters) {
+    public void apply(GameMap map, List<LivingBeing> characters) {
         numberOfVictims = 0;
         for (LivingBeing being : characters) {
             if (isVulnerable(map, being)) {
@@ -40,7 +40,7 @@ public class Virus extends RandomEvent {
         return numberOfVictims + " characters died";
     }
 
-    private boolean isVulnerable(Map map, LivingBeing being) {
+    private boolean isVulnerable(GameMap map, LivingBeing being) {
         return !being.isDead()
                 && !map.isInOwnSafeZone(being)
                 && being.getEnergyPoints() < ENERGY_THRESHOLD * being.getMaxEnergyPoints();

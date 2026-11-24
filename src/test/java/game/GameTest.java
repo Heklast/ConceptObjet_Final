@@ -35,7 +35,7 @@ class GameTest {
     @Test
     void gamePlacesTheObstacles() {
         Game game = new Game(16, 10, 5);
-        Map map = game.getMap();
+        GameMap map = game.getMap();
         int rocks = 0;
 
         for (int y = 0; y < map.getSizeY(); y++) {

@@ -16,7 +16,7 @@ public class ConsoleDisplay {
         this.delayMs=delayMs;
     }
     
-    public void displayTurn(int turn,Map map){
+    public void displayTurn(int turn,GameMap map){
         System.out.println("Turn n°"+turn);
         map.display();
     }

@@ -1,6 +1,6 @@
 package game.events;
 
-import game.Map;
+import game.GameMap;
 import game.beings.LivingBeing;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public abstract class RandomEvent {
         return name;
     }
 
-    public abstract void apply(Map map, List<LivingBeing> characters);
+    public abstract void apply(GameMap map, List<LivingBeing> characters);
 
     public abstract String describeEffect();
 }

@@ -15,7 +15,7 @@ class MapTest {
 
     @Test
     void elfIsSafeOnlyInItsOwnCorner() {
-        Map map = new Map(SIZE_X, SIZE_Y);
+        GameMap map = new GameMap(SIZE_X, SIZE_Y);
 
         assertTrue(map.isInOwnSafeZone(new Elf(0, SIZE_X - 1)));
         assertFalse(map.isInOwnSafeZone(new Elf(5, 8)));
@@ -24,7 +24,7 @@ class MapTest {
 
     @Test
     void moveCharacterUpdatesTheSquaresAndThePosition() {
-        Map map = new Map(SIZE_X, SIZE_Y);
+        GameMap map = new GameMap(SIZE_X, SIZE_Y);
         Elf elf = new Elf(5, 8);
         map.moveCharacter(elf, 8, 5);
 
@@ -38,7 +38,7 @@ class MapTest {
 
     @Test
     void moveCharacterRefusesAnOccupiedSquare() {
-        Map map = new Map(SIZE_X, SIZE_Y);
+        GameMap map = new GameMap(SIZE_X, SIZE_Y);
         Elf first = new Elf(5, 8);
         Elf second = new Elf(5, 9);
         map.moveCharacter(first, 8, 5);
