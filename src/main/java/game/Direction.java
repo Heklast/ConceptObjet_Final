@@ -33,7 +33,7 @@ public enum Direction {
     * @return direction
     */
     public Direction getModifiedValue(int modifier){
-        return  getDirectionOfNumber(Math.floorMod(this.value+modifier,8));
+        return  getDirectionOfNumber(Math.floorMod(this.value+modifier, 8));
     }
 
     /** Horizontal step of this direction (-1, 0 or 1). x grows to the East. */

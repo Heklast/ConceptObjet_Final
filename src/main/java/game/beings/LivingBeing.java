@@ -2,8 +2,7 @@ package game.beings;
 
 import game.Config;
 import game.Direction;
-import game.Map;
-import game.SquareTypes;
+import game.GameMap;
 import game.RandomGenerator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,10 +20,10 @@ public class LivingBeing {
     private int posY;
     private ArrayList<String> messages;
     private Direction lastDirectionTaken;
-    private Color color;
+    private final Color color;
     private Roles role;
     private Skills skills;
-    private Map map;
+    private GameMap map;
 
     // Energy
     private int energyPoints;
@@ -32,8 +31,8 @@ public class LivingBeing {
     private boolean returningHome = false;
     private boolean exhausted = false;
 
-    public LivingBeing(int initialY, int initialX) {
-        this(initialY, initialX, null, Roles.WARRIOR);
+    public LivingBeing(int initialY, int initialX, Color color) {
+        this(initialY, initialX, color, Roles.WARRIOR);
     }
 
     public LivingBeing(int initialY, int initialX, Color color, Roles role) {
@@ -57,11 +56,9 @@ public class LivingBeing {
 
     public void setRole(Roles role) { applyRole(role); }
 
-    public void setColor(Color color) { this.color = color; }
+    public void setMap(GameMap map) { this.map = map; }
 
-    public void setMap(Map map) { this.map = map; }
-
-    //this one is only called by Map.moveCharacter
+    //this one is only called by GameMap.moveCharacter
     public void setPosition(int x, int y) {
         this.posX = x;
         this.posY = y;
@@ -79,6 +76,24 @@ public class LivingBeing {
     }
 
     public boolean isExhausted() { return exhausted; }
+
+    //exhausted (EP == 0) and dead (killed by an event) are the same state
+    public boolean isDead() { return exhausted; }
+
+    public int getNumberOfMessages() { return messages.size(); }
+
+    //direct EP loss (events), if 0 the being dies
+    public void loseEnergyPoints(int amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("amount (" + amount + ") must not be negative");
+        }
+        loseEnergy(amount);
+    }
+
+    public void die() {
+        energyPoints = 0;
+        becomeObstacle();
+    }
 
     protected void spendEnergy(int tiles) {
         energyPoints = Math.max(0, energyPoints - tiles * Config.EP_PER_TILE);
@@ -105,8 +120,7 @@ public class LivingBeing {
         exhausted = true;
         messages.clear();
         exhaustedCount++;
-        //the being stays on its square, which becomes an obstacle for everybody
-        if (map != null) map.getSquare(posX, posY).setType(SquareTypes.ROCK);
+        //the being stays on its square, which stays occupied so it is an obstacle for everybody
     }
 
     // ------------------------------------------------------------------ move
@@ -116,7 +130,7 @@ public class LivingBeing {
      * The walking itself (obstacles, encounters) needs the Map and is still to be plugged in
      */
     public void move() {
-        if (exhausted || map == null) return;
+        if (isDead() || map == null) return;
 
         boolean inSafeZone = isInOwnSafeZone();
         if (inSafeZone) {
@@ -138,13 +152,13 @@ public class LivingBeing {
 
     //last direction slightly rotated (-1, 0 or +1 mostly)
     private Direction randomDirection() {
-        int modifier = (int) Math.round(RandomGenerator.getInstance().nextGaussian());
+        int modifier = (int) Math.round(RandomGenerator.nextGaussian());
         return lastDirectionTaken.getModifiedValue(modifier);
     }
 
     //1 to (1 + speed) tiles; higher speed makes long moves more probable
     private int randomDistance() {
-        double p = RandomGenerator.getInstance().nextDouble();
+        double p = RandomGenerator.nextDouble();
         int distance = 1;
         if (p < 0.6 + skills.getSpeed() * 0.1) distance++;
         if (skills.getSpeed() >= 2 && p < 0.2 + skills.getSpeed() * 0.1) distance++;
@@ -181,7 +195,7 @@ public class LivingBeing {
                     }
                 }
                 spendEnergyForBlockedPath(distance - step);
-                boolean clockwise = RandomGenerator.getInstance().nextBoolean();
+                boolean clockwise = RandomGenerator.nextBoolean();
                 lastDirectionTaken = direction.getModifiedValue(clockwise ? 1 : -1);
                 return;
             }
@@ -217,9 +231,8 @@ public class LivingBeing {
             transfer(this, other, Integer.MAX_VALUE);
             transfer(other, this, Integer.MAX_VALUE);
         } else if (isAlly(other)) {
-            RandomGenerator rng = RandomGenerator.getInstance();
-            transfer(this, other, 1 + rng.nextInt(Config.MAX_MESSAGES_PER_ENCOUNTER));
-            transfer(other, this, 1 + rng.nextInt(Config.MAX_MESSAGES_PER_ENCOUNTER));
+            transfer(this, other, 1 + RandomGenerator.nextInt(Config.MAX_MESSAGES_PER_ENCOUNTER));
+            transfer(other, this, 1 + RandomGenerator.nextInt(Config.MAX_MESSAGES_PER_ENCOUNTER));
         } else {
             fight(other);
         }
@@ -227,16 +240,15 @@ public class LivingBeing {
 
     /**roll d6 + strength for each side; the winner takes messages it lacks from the loser. */
     private void fight(LivingBeing other) {
-        RandomGenerator rng = RandomGenerator.getInstance();
-        int mine = 1 + rng.nextInt(6) + skills.getStrength();
-        int theirs = 1 + rng.nextInt(6) + other.skills.getStrength();
+        int mine = 1 + RandomGenerator.nextInt(6) + skills.getStrength();
+        int theirs = 1 + RandomGenerator.nextInt(6) + other.skills.getStrength();
         if (mine == theirs) {
             events.add(label() + " vs " + other.label() + ": draw");
             return;
         }
         LivingBeing winner = mine > theirs ? this : other;
         LivingBeing loser = winner == this ? other : this;
-        int moved = transfer(loser, winner, 1 + rng.nextInt(Config.MAX_MESSAGES_PER_ENCOUNTER), true);
+        int moved = transfer(loser, winner, 1 + RandomGenerator.nextInt(Config.MAX_MESSAGES_PER_ENCOUNTER), true);
         events.add(winner.label() + " beats " + loser.label() + " (" + moved + " msg stolen)");
         winner.loseEnergy(Config.FIGHT_EP_COST_WINNER);
         loser.loseEnergy(Config.FIGHT_EP_COST_LOSER);
@@ -252,7 +264,7 @@ public class LivingBeing {
         for (String m : from.messages) {
             if (!to.messages.contains(m)) candidates.add(m);
         }
-        Collections.shuffle(candidates, RandomGenerator.getInstance().asRandom());
+        Collections.shuffle(candidates, RandomGenerator.asRandom());
         int moved = 0;
         for (String m : candidates) {
             if (moved >= max || to.messages.size() >= to.getMessageCapacity()) break;

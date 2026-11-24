@@ -9,7 +9,7 @@ import game.beings.Goblin;
 import game.beings.Human;
 import game.beings.LivingBeing;
 import game.beings.Orch;
-
+import game.events.RandomEvent;
 
 public class ConsoleDisplay {
     
@@ -21,7 +21,7 @@ public class ConsoleDisplay {
         this.delayMs=delayMs;
     }
     
-    public void displayTurn(int turn,Map map){
+    public void displayTurn(int turn,GameMap map){
         System.out.println("Turn n°"+turn);
         map.display();
         for (String e : LivingBeing.drainEvents()) System.out.println("  "+e);
@@ -29,5 +29,21 @@ public class ConsoleDisplay {
                 +" | Goblins: "+Goblin.getCount()+" | Orcs: "+Orch.getCount());
         System.out.println("Beings: "+LivingBeing.getCount()
                 +" | exhausted: "+LivingBeing.getExhaustedCount());
+    }
+
+    public void displayEvent(int turn, RandomEvent event) {
+        System.out.println("*** Turn " + turn + " : " + event.getName() + " ! " + event.describeEffect() + " ***");
+    }
+
+    public void displayEnd(int numberOfTurns) {
+        System.out.println("End of the game after " + numberOfTurns + " turns");
+    }
+
+    public void pause() {
+        try {
+            Thread.sleep(delayMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

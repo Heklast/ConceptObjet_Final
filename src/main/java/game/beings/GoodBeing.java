@@ -2,8 +2,8 @@ package game.beings;
 
 public abstract class GoodBeing extends LivingBeing {
 
-    public GoodBeing(int initialY, int initialX) {
-        super(initialY, initialX);
+    public GoodBeing(int initialY, int initialX, Color color) {
+        super(initialY, initialX, color);
     }
 
     @Override

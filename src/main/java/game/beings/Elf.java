@@ -6,7 +6,7 @@ public class Elf extends GoodBeing {
     private static int count = 0;
 
     public Elf(int initialY, int initialX) {
-        super(initialY, initialX);
+        super(initialY, initialX, Color.PURPLE);
         count++;
     }
 

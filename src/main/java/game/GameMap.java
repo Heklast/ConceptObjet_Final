@@ -1,0 +1,155 @@
+package game;
+
+import game.beings.Color;
+import game.beings.LivingBeing;
+import java.util.ArrayList;
+import java.util.List;
+
+public class GameMap {
+    private int sizeX;
+    private int sizeY;
+    private Square[][] squares;
+        
+    public GameMap(int sizeX,int sizeY){
+        this.sizeX = sizeX;
+        this.sizeY = sizeY;
+        squares = new Square[sizeY][sizeX];
+        
+        for(int i=0;i<sizeY;i++){
+            for(int j=0;j<sizeX;j++){
+                Color color = Color.RESET;
+                
+                if(i<3 && j<3){
+                    color=Color.GREEN;
+                }
+                if(i>=sizeY-3 && j<3){
+                    color = Color.ORANGE;
+                }
+                if(i<3 && j>=sizeX-3){
+                    color = Color.PURPLE;
+                }
+                if(i>=sizeY-3 && j>=sizeX-3){
+                    color = Color.BLUE;
+                }
+                
+                Square square = new Square(j,i,color,this);
+                squares[i][j]=square;
+                
+            }
+        }
+     
+    }
+    
+    public void display(){
+        System.out.println("Map:");
+        for (Square[] square1 : squares) {
+            for (Square square : square1) {
+                square.display();
+            }
+            System.out.println("");
+        }
+    }
+    
+    public int getSizeX() {
+        return sizeX;
+    }
+
+    public int getSizeY() {
+        return sizeY;
+    }
+
+    public Square getSquare(int x, int y) {
+        if (x < 0 || x >= sizeX || y < 0 || y >= sizeY) {
+            throw new IllegalArgumentException("square (" + x + ", " + y + ") is outside the map");
+        }
+        return squares[y][x];
+    }
+
+    public boolean isInBounds(int x, int y) {
+        return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
+    }
+
+    /**
+     * Can this being step on (x, y)? No if out of the map, occupied (other being or
+     * dead/exhausted being), a rock, or the SafeZone of another team.
+     */
+    public boolean isFreeFor(LivingBeing being, int x, int y) {
+        if (!isInBounds(x, y)) return false;
+        Square s = squares[y][x];
+        if (!s.isFree()) return false;
+        Color owner = s.getOwner();
+        return owner == Color.RESET || owner == being.getColor();
+    }
+
+    /** Direction of the closest square of the being's own SafeZone. */
+    public Direction directionToSafeZone(LivingBeing being) {
+        int bestDist = Integer.MAX_VALUE;
+        Square best = null;
+        for (Square s : getSafeZoneSquares(being.getColor())) {
+            int dist = Math.max(Math.abs(s.getX() - being.getPosX()), Math.abs(s.getY() - being.getPosY()));
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = s;
+            }
+        }
+        if (best == null) return Direction.N;
+        return Direction.fromSteps(best.getX() - being.getPosX(), best.getY() - being.getPosY());
+    }
+
+    public boolean isInOwnSafeZone(LivingBeing being) {
+        return getSquare(being.getPosX(), being.getPosY()).getOwner() == being.getColor();
+    }
+
+    public List<Square> getSafeZoneSquares(Color color) {
+        List<Square> zone = new ArrayList<>();
+        for (Square[] row : squares) {
+            for (Square square : row) {
+                if (square.getOwner() == color) {
+                    zone.add(square);
+                }
+            }
+        }
+        return zone;
+    }
+
+    public List<Square> getFreeSquaresOutsideSafeZones() {
+        List<Square> freeSquares = new ArrayList<>();
+        for (Square[] row : squares) {
+            for (Square square : row) {
+                if (square.isFree() && !square.isSafeZone()) {
+                    freeSquares.add(square);
+                }
+            }
+        }
+        return freeSquares;
+    }
+
+    public int placeRandomRocks(int numberOfRocks) {
+        if (numberOfRocks < 0) {
+            throw new IllegalArgumentException("numberOfRocks (" + numberOfRocks + ") must not be negative");
+        }
+        List<Square> candidates = getFreeSquaresOutsideSafeZones();
+        int rocksPlaced = Math.min(numberOfRocks, candidates.size());
+        for (int i = 0; i < rocksPlaced; i++) {
+            int index = RandomGenerator.nextInt(0, candidates.size() - 1);
+            candidates.remove(index).placeRock();
+        }
+        return rocksPlaced;
+    }
+
+    public void moveCharacter(LivingBeing character,int newPosX,int newPosY){
+        Square target = getSquare(newPosX, newPosY);
+        if (target.getOccupedBy() != character && !target.isFree()) {
+            throw new IllegalStateException("square (" + newPosX + ", " + newPosY + ") is not free");
+        }
+
+        Square origin = getSquare(character.getPosX(), character.getPosY());
+        if (origin.getOccupedBy() == character) {
+            origin.setOccupedBy(null);
+        }
+        target.setOccupedBy(character);
+        character.setPosition(newPosX, newPosY);
+    }
+       
+        
+}

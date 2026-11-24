@@ -11,15 +11,23 @@ public class Square {
     private final Color owner;
     private SquareTypes type;
     private LivingBeing occupedBy;
-    private Map map;
+    private GameMap map;
    
     
-    public Square(int posX,int posY,Color owner,Map map){
+    public Square(int posX,int posY,Color owner,GameMap map){
         this.x=posX;
         this.y=posY;
         this.type=SquareTypes.GRASS;
         this.owner= owner;
         this.map = map;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 
     public Color getOwner() {
@@ -29,24 +37,37 @@ public class Square {
     public SquareTypes getType() {
         return type;
     }
-    
-    public void setType(SquareTypes type) {
-        this.type = type;
+
+    public boolean isSafeZone() {
+        return owner != Color.RESET;
     }
 
-    public int getX() { return x; }
+    public boolean isFree() {
+        return type == SquareTypes.GRASS && occupedBy == null;
+    }
 
-    public int getY() { return y; }
-
+    public void placeRock() {
+        if (!isFree()) {
+            throw new IllegalStateException("a rock can only be placed on a free grass square");
+        }
+        type = SquareTypes.ROCK;
+    }
+    
     public void display(){
         Character caractere = Optional.ofNullable(this.owner)
                                 .filter(o -> !o.toString().isEmpty())
                                 .map(o -> o.toString().charAt(0))
-                                .orElse('o');
+                                .orElse('.');
+
+        if(type==SquareTypes.ROCK){
+            caractere='#';
+        }
 
         if(occupedBy!=null){
             caractere=occupedBy.getClass().getSimpleName().toLowerCase().charAt(0);
-            if(occupedBy.isExhausted()) caractere='X'; // exhausted being = obstacle
+            if(occupedBy.isDead()){
+                caractere='x';
+            }
         }
         
         System.out.print(owner.getCode()+caractere+Color.RESET.getCode());
@@ -60,11 +81,11 @@ public class Square {
         return this.occupedBy;
     }
 
-    public Map getMap() {
+    public GameMap getMap() {
         return map;
     }
 
-    public void setMap(Map map) {
+    public void setMap(GameMap map) {
         this.map = map;
     }
     
