@@ -1,11 +1,14 @@
 package game;
 
+import game.beings.Color;
 import game.beings.Elf;
+import game.beings.Roles;
 import game.beings.Goblin;
 import game.beings.Human;
 import game.beings.LivingBeing;
 import game.beings.Orch;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +46,13 @@ public class Game {
             Orch orch = new Orch(sizeY-2,(int)Math.ceil(i+1/3));
             characters.add(orch);
             map.moveCharacter(orch, orch.getPosX(), orch.getPosY());
+
+            // Team colours = their SafeZone, skills come from the role (W,R,Wz,W,R...)
+            Roles role = Roles.values()[i % 3];
+            setup(elf, Color.PURPLE, role);
+            setup(goblin, Color.GREEN, role);
+            setup(human, Color.BLUE, role);
+            setup(orch, Color.ORANGE, role);
         }
         
         messages = new HashSet<>();
@@ -118,10 +128,18 @@ public class Game {
         }
     }
     
+    private void setup(LivingBeing being, Color color, Roles role){
+        being.setColor(color);
+        being.setRole(role);
+        being.setMap(map);
+    }
+
     private void newTurn(){
-        
-        for(LivingBeing character: characters){
-            character.move();
+        // New random order at each step; exhausted beings (obstacles) do not play
+        ArrayList<LivingBeing> order = new ArrayList<>(characters);
+        Collections.shuffle(order, RandomGenerator.getInstance().asRandom());
+        for(LivingBeing character: order){
+            if(!character.isExhausted()) character.move();
         }
     }
 }

@@ -9,7 +9,7 @@ public class Square {
     private final int x;
     private final int y;
     private final Color owner;
-    private final SquareTypes type;
+    private SquareTypes type;
     private LivingBeing occupedBy;
     private Map map;
    
@@ -30,6 +30,14 @@ public class Square {
         return type;
     }
     
+    public void setType(SquareTypes type) {
+        this.type = type;
+    }
+
+    public int getX() { return x; }
+
+    public int getY() { return y; }
+
     public void display(){
         Character caractere = Optional.ofNullable(this.owner)
                                 .filter(o -> !o.toString().isEmpty())
@@ -38,6 +46,7 @@ public class Square {
 
         if(occupedBy!=null){
             caractere=occupedBy.getClass().getSimpleName().toLowerCase().charAt(0);
+            if(occupedBy.isExhausted()) caractere='X'; // exhausted being = obstacle
         }
         
         System.out.print(owner.getCode()+caractere+Color.RESET.getCode());
