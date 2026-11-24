@@ -22,6 +22,23 @@ public final class RandomGenerator {
         return min + random.nextInt(max - min + 1);
     }
 
+    /** Random int in [0, bound). */
+    public static int nextInt(int bound) {
+        return random.nextInt(bound);
+    }
+
+    public static boolean nextBoolean() {
+        return random.nextBoolean();
+    }
+
+    public static double nextGaussian() {
+        return random.nextGaussian();
+    }
+
+    public static Random asRandom() {
+        return random;
+    }
+
     public static double nextDouble() {
         return random.nextDouble();
     }

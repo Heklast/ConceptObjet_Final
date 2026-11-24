@@ -65,6 +65,37 @@ public class GameMap {
         return squares[y][x];
     }
 
+    public boolean isInBounds(int x, int y) {
+        return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
+    }
+
+    /**
+     * Can this being step on (x, y)? No if out of the map, occupied (other being or
+     * dead/exhausted being), a rock, or the SafeZone of another team.
+     */
+    public boolean isFreeFor(LivingBeing being, int x, int y) {
+        if (!isInBounds(x, y)) return false;
+        Square s = squares[y][x];
+        if (!s.isFree()) return false;
+        Color owner = s.getOwner();
+        return owner == Color.RESET || owner == being.getColor();
+    }
+
+    /** Direction of the closest square of the being's own SafeZone. */
+    public Direction directionToSafeZone(LivingBeing being) {
+        int bestDist = Integer.MAX_VALUE;
+        Square best = null;
+        for (Square s : getSafeZoneSquares(being.getColor())) {
+            int dist = Math.max(Math.abs(s.getX() - being.getPosX()), Math.abs(s.getY() - being.getPosY()));
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = s;
+            }
+        }
+        if (best == null) return Direction.N;
+        return Direction.fromSteps(best.getX() - being.getPosX(), best.getY() - being.getPosY());
+    }
+
     public boolean isInOwnSafeZone(LivingBeing being) {
         return getSquare(being.getPosX(), being.getPosY()).getOwner() == being.getColor();
     }

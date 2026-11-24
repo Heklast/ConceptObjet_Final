@@ -4,6 +4,11 @@
  */
 package game;
 
+import game.beings.Elf;
+import game.beings.Goblin;
+import game.beings.Human;
+import game.beings.LivingBeing;
+import game.beings.Orch;
 import game.events.RandomEvent;
 
 public class ConsoleDisplay {
@@ -19,6 +24,11 @@ public class ConsoleDisplay {
     public void displayTurn(int turn,GameMap map){
         System.out.println("Turn n°"+turn);
         map.display();
+        for (String e : LivingBeing.drainEvents()) System.out.println("  "+e);
+        System.out.println("Elves: "+Elf.getCount()+" | Humans: "+Human.getCount()
+                +" | Goblins: "+Goblin.getCount()+" | Orcs: "+Orch.getCount());
+        System.out.println("Beings: "+LivingBeing.getCount()
+                +" | exhausted: "+LivingBeing.getExhaustedCount());
     }
 
     public void displayEvent(int turn, RandomEvent event) {

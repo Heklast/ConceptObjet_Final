@@ -6,6 +6,7 @@ import game.beings.Goblin;
 import game.beings.Human;
 import game.beings.LivingBeing;
 import game.beings.Orch;
+import game.beings.Roles;
 import game.events.EventFactory;
 import game.events.RandomEvent;
 import java.util.ArrayList;
@@ -46,10 +47,12 @@ public class Game {
         List<Square> humanZone = getTeamZone(Color.BLUE, nbCharactersByTeam);
         List<Square> orchZone = getTeamZone(Color.ORANGE, nbCharactersByTeam);
         for (int i = 0; i < nbCharactersByTeam; i++) {
-            addCharacter(new Elf(elfZone.get(i).getY(), elfZone.get(i).getX()));
-            addCharacter(new Goblin(goblinZone.get(i).getY(), goblinZone.get(i).getX()));
-            addCharacter(new Human(humanZone.get(i).getY(), humanZone.get(i).getX()));
-            addCharacter(new Orch(orchZone.get(i).getY(), orchZone.get(i).getX()));
+            // skills come from the role (W,R,Wz,W,R...)
+            Roles role = Roles.values()[i % 3];
+            addCharacter(new Elf(elfZone.get(i).getY(), elfZone.get(i).getX()), role);
+            addCharacter(new Goblin(goblinZone.get(i).getY(), goblinZone.get(i).getX()), role);
+            addCharacter(new Human(humanZone.get(i).getY(), humanZone.get(i).getX()), role);
+            addCharacter(new Orch(orchZone.get(i).getY(), orchZone.get(i).getX()), role);
         }
 
         map.placeRandomRocks(NUMBER_OF_OBSTACLES);
@@ -132,7 +135,9 @@ public class Game {
         return zone;
     }
 
-    private void addCharacter(LivingBeing character) {
+    private void addCharacter(LivingBeing character, Roles role) {
+        character.setRole(role);
+        character.setMap(map);
         characters.add(character);
         map.moveCharacter(character, character.getPosX(), character.getPosY());
     }
