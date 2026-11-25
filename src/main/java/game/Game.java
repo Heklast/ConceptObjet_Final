@@ -1,12 +1,18 @@
 package game;
 
 import game.beings.Color;
+import game.beings.masters.Master;
+import java.util.EnumMap;
 import game.beings.Elf;
 import game.beings.Goblin;
 import game.beings.Human;
 import game.beings.LivingBeing;
 import game.beings.Orch;
 import game.beings.Roles;
+import game.beings.masters.MasterElf;
+import game.beings.masters.MasterGoblin;
+import game.beings.masters.MasterHuman;
+import game.beings.masters.MasterOrch;
 import game.events.EventFactory;
 import game.events.RandomEvent;
 import java.util.ArrayList;
@@ -23,6 +29,8 @@ public class Game {
     private static final int LATEST_EVENT_TURN = 40;
     private static final int DELAY_BETWEEN_TURNS_MS = 1000;
 
+    private final EnumMap<Color, Master> masters = new EnumMap<>(Color.class);
+    
     private ArrayList<LivingBeing> characters;
     private Set<String> messages;
     private GameMap map;
@@ -54,6 +62,11 @@ public class Game {
             addCharacter(new Human(humanZone.get(i).getY(), humanZone.get(i).getX()), role);
             addCharacter(new Orch(orchZone.get(i).getY(), orchZone.get(i).getX()), role);
         }
+        
+        registerMaster(MasterElf.getInstance());
+        registerMaster(MasterGoblin.getInstance());
+        registerMaster(MasterHuman.getInstance());
+        registerMaster(MasterOrch.getInstance());
 
         map.placeRandomRocks(NUMBER_OF_OBSTACLES);
 
@@ -108,15 +121,46 @@ public class Game {
     
 
     public void startGame() {
+        int turnsPlayed = 0;
+
         for (int turn = 0; turn < MAX_TURNS; turn++) {
-            newTurn();
-            if (turn == eventTurn) {
+            boolean complete = newTurn();
+            turnsPlayed++;
+
+            if (!complete && turn == eventTurn) {
                 triggerRandomEvent(turn);
             }
+
             display.displayTurn(turn, map);
-            display.pause();
+            for (Master master : masters.values()) {
+                System.out.printf("%s Master: %d/%d%n",
+                        master.getColor(), master.getScore(), messages.size());
+            }
+
+            if (complete) break;
+            if (turnsPlayed < MAX_TURNS) display.pause();
         }
-        display.displayEnd(MAX_TURNS);
+
+        display.displayEnd(turnsPlayed);
+        printResult();
+    }
+    
+    private void printResult() {
+        int best = masters.values().stream()
+                .mapToInt(Master::getScore)
+                .max()
+                .orElseThrow();
+
+        List<String> leaders = new ArrayList<>();
+        for (Master master : masters.values()) {
+            if (master.getScore() == best) {
+                leaders.add(master.getColor().toString());
+            }
+        }
+
+        String label = leaders.size() == 1 ? "Winner: " : "Draw: ";
+        System.out.println(label + String.join(", ", leaders)
+                + " (" + best + "/" + messages.size() + ")");
     }
 
     public List<LivingBeing> getCharacters() {
@@ -129,10 +173,21 @@ public class Game {
 
     private List<Square> getTeamZone(Color color, int nbCharactersByTeam) {
         List<Square> zone = map.getSafeZoneSquares(color);
-        if (nbCharactersByTeam < 0 || nbCharactersByTeam > zone.size()) {
-            throw new IllegalArgumentException("nbCharactersByTeam (" + nbCharactersByTeam + ") must be between 0 and " + zone.size());
+        int maxTroopers = zone.size() - 1;
+
+        if (nbCharactersByTeam < 1 || nbCharactersByTeam > maxTroopers) {
+            throw new IllegalArgumentException(
+                "Troopers per team must be between 1 and " + maxTroopers
+            );
         }
+
         return zone;
+    }
+    
+    private <T extends LivingBeing & Master> void registerMaster(T master) {
+        map.placeInOwnSafeZone(master);
+        master.getMessages().clear();
+        masters.put(master.getColor(), master);
     }
 
     private void addCharacter(LivingBeing character, Roles role) {
@@ -152,13 +207,24 @@ public class Game {
         }
     }
     
-    private void newTurn(){
+    private boolean newTurn() {
         RandomGenerator.shuffle(characters);
-        for(LivingBeing character: characters){
-            if (!character.isDead()) {
-                character.move();
+
+        for (LivingBeing character : characters) {
+            if (character.isDead()) continue;
+
+            character.move();
+
+            if (!character.isDead() && map.isInOwnSafeZone(character)) {
+                Master master = masters.get(character.getColor());
+                master.receiveMessages(character);
+
+                if (master.getScore() == messages.size()) {
+                    return true;
+                }
             }
         }
+        return false;
     }
 
     private void triggerRandomEvent(int turn) {

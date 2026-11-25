@@ -53,6 +53,10 @@ public enum Direction {
             default: return 0;
         }
     }
+    
+    public boolean isDiagonal() {
+        return getDx() != 0 && getDy() != 0;
+    }
 
     /** Direction matching a step (dx, dy); only the sign of each is used. */
     public static Direction fromSteps(int dx, int dy){

@@ -136,6 +136,25 @@ public class GameMap {
         }
         return rocksPlaced;
     }
+    
+    public void placeInOwnSafeZone(LivingBeing being) {
+        int x = being.getPosX();
+        int y = being.getPosY();
+        if (isInBounds(x, y) && getSquare(x, y).getOccupedBy() == being) {
+            throw new IllegalStateException("Being is already on this map");
+        }
+
+        for (Square square : getSafeZoneSquares(being.getColor())) {
+            if (square.isFree()) {
+                square.setOccupedBy(being);
+                being.setPosition(square.getX(), square.getY());
+                being.setMap(this);
+                return;
+            }
+        }
+
+        throw new IllegalStateException("No free square in the " + being.getColor() + " safe zone");
+    }
 
     public void moveCharacter(LivingBeing character,int newPosX,int newPosY){
         Square target = getSquare(newPosX, newPosY);

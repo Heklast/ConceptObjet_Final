@@ -1,10 +1,21 @@
 package game.beings.masters;
+
 import game.beings.Elf;
 
-public class MasterElf extends Elf {
+public final class MasterElf extends Elf implements Master {
 
-    public MasterElf(int initialY, int initialX) {
-        super(initialY, initialX);
+    private static final MasterElf INSTANCE = new MasterElf();
+
+    private MasterElf() {
+        super(-1, -1);
     }
 
+    public static MasterElf getInstance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public void move() {
+        // The Elf Master stays in its team's safe zone.
+    }
 }
