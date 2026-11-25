@@ -1,5 +1,7 @@
 package game.beings;
 
+import game.Direction;
+
 public class Human extends GoodBeing {
 
     // Number of Human instances created (masters included)
@@ -11,6 +13,11 @@ public class Human extends GoodBeing {
     }
 
     public static int getCount() { return count; }
+
+    @Override
+    protected boolean canMoveInDirection(Direction direction) {
+        return !direction.isDiagonal();
+    }
 
     @Override
     public boolean isSameRace(LivingBeing other) {

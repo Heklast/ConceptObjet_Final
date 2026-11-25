@@ -96,12 +96,14 @@ public class LivingBeing {
     }
 
     protected void spendEnergy(int tiles) {
-        energyPoints = Math.max(0, energyPoints - tiles * Config.EP_PER_TILE);
+        loseEnergy(tiles * Config.EP_PER_TILE);
     }
 
     //blocked by an obstacle so the being loses the EP of the tiles it had left to walk
     protected void spendEnergyForBlockedPath(int tilesLeft) {
-        spendEnergy(tilesLeft);
+        if (!isInOwnSafeZone()) {
+            spendEnergy(tilesLeft);
+        }
     }
 
     //direct EP loss (fights), if 0 the being becomes an obstacle
@@ -149,6 +151,10 @@ public class LivingBeing {
 
         if (energyPoints == 0) becomeObstacle();
     }
+    
+    protected boolean canMoveInDirection(Direction direction) {
+        return true;
+    }
 
     //last direction slightly rotated (-1, 0 or +1 mostly)
     private Direction randomDirection() {
@@ -157,7 +163,7 @@ public class LivingBeing {
     }
 
     //1 to (1 + speed) tiles; higher speed makes long moves more probable
-    private int randomDistance() {
+    protected int randomDistance() {
         double p = RandomGenerator.nextDouble();
         int distance = 1;
         if (p < 0.6 + skills.getSpeed() * 0.1) distance++;
@@ -172,18 +178,23 @@ public class LivingBeing {
      */
     private void walk(Direction direction, int distance) {
         //go home so sidestep (+-45, +-90 degrees) if the straight way is blocked
+    	if (!canMoveInDirection(direction)) {
+    	    int turn = RandomGenerator.nextBoolean() ? 1 : -1;
+    	    direction = direction.getModifiedValue(turn);
+    	}
         if (returningHome) {
             int[] turns = {0, 1, -1, 2, -2};
             for (int t : turns) {
                 Direction d = direction.getModifiedValue(t);
-                if (map.isFreeFor(this, posX + d.getDx(), posY + d.getDy())) {
+                if (canMoveInDirection(d)
+                        && map.isFreeFor(this, posX + d.getDx(), posY + d.getDy())) {
                     direction = d;
                     break;
                 }
             }
         }
         lastDirectionTaken = direction;
-        for (int step = 0; step < distance; step++) {
+        for (int step = 0; step < distance && !isExhausted(); step++) {
             int nx = posX + direction.getDx();
             int ny = posY + direction.getDy();
             if (!map.isFreeFor(this, nx, ny)) {
@@ -200,7 +211,11 @@ public class LivingBeing {
                 return;
             }
             map.moveCharacter(this, nx, ny);
-            if (!map.isInOwnSafeZone(this)) spendEnergy(1);
+            if (isInOwnSafeZone()) {
+                if (returningHome) return;
+            } else {
+                spendEnergy(1);
+            }
         }
     }
 

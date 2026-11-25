@@ -16,4 +16,9 @@ public class Goblin extends BadBeing {
     public boolean isSameRace(LivingBeing other) {
         return other instanceof Goblin;
     }
+    
+    @Override
+    protected int randomDistance() {
+        return 1;
+    }
 }
