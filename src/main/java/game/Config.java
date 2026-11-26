@@ -7,7 +7,7 @@ public final class Config {
     public static final int BASE_MAX_EP = 100;
     /** Extra max EP per strength level above 1 (ratio of BASE_MAX_EP). */
     public static final double STRENGTH_EP_BONUS = 0.10;
-    public static final int EP_PER_TILE = 1;
+    public static final int EP_PER_TILE = 2;
     public static final double LOW_EP_RATIO = 0.20;
     public static final int RECHARGE_PER_STEP = 10;
     /** A being that recharged in its SafeZone leaves again once it reaches this ratio. */

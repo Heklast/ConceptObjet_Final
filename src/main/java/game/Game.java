@@ -186,7 +186,7 @@ public class Game {
     
     private <T extends LivingBeing & Master> void registerMaster(T master) {
         map.placeInOwnSafeZone(master);
-        master.getMessages().clear();
+        master.clearMessages();
         masters.put(master.getColor(), master);
     }
 

@@ -297,7 +297,10 @@ public class LivingBeing {
         return getClass().getSimpleName() + "@" + posX + "," + posY;
     }
 
-    public List<String> getMessages() { return messages; }
+    /** Read-only snapshot: callers cannot modify the internal list. */
+    public List<String> getMessages() { return List.copyOf(messages); }
+
+    public void clearMessages() { messages.clear(); }
 
     //Events of the last step; the display prints then clears them
     public static List<String> drainEvents() {
