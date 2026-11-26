@@ -20,7 +20,7 @@ class LivingBeingTest {
 
     @Test
     void troopersUseTheirSpeciesDirections() {
-        var diagonals = EnumSet.of(Direction.NE, Direction.SE, Direction.SO, Direction.NO);
+        EnumSet<Direction> diagonals =EnumSet.of(Direction.NE, Direction.SE, Direction.SO, Direction.NO);
         Elf elf = new Elf(5, 5);
         Human human = new Human(5, 5);
         Orch orch = new Orch(5, 5);
