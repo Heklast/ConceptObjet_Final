@@ -15,6 +15,10 @@ public final class Config {
     /** Messages a being can carry per memory level. */
     public static final int MESSAGES_PER_MEMORY = 5;
 
+    // Distinct starting messages per team on the standard 40-message deck.
+    public static final int STARTING_TEAM_MESSAGES = 29;
+    public static final int SHORT_RANGE_EXTRA_MESSAGES = 1;
+
     /** Max messages moved in one friendly exchange / one won fight. */
     public static final int MAX_MESSAGES_PER_ENCOUNTER = 3;
     /** Extra EP lost in a fight (the loser pays more). Friendly meetings are free. */
