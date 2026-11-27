@@ -4,6 +4,7 @@ import game.Config;
 import game.Direction;
 import game.GameMap;
 import game.RandomGenerator;
+import game.beings.masters.Master;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +25,7 @@ public class LivingBeing {
     private Roles role;
     private Skills skills;
     private GameMap map;
+    private Master teamMaster;
 
     // Energy
     private int energyPoints;
@@ -39,7 +41,6 @@ public class LivingBeing {
         posX = initialX;
         posY = initialY;
         messages = new ArrayList<>();
-        lastDirectionTaken = Direction.SE;
         this.color = color;
         applyRole(role);
         count++;
@@ -57,6 +58,11 @@ public class LivingBeing {
     public void setRole(Roles role) { applyRole(role); }
 
     public void setMap(GameMap map) { this.map = map; }
+
+    public void setTeamMaster(Master master) {
+        if (master.getColor() != color) throw new IllegalArgumentException("Wrong team Master");
+        this.teamMaster = master;
+    }
 
     //this one is only called by GameMap.moveCharacter
     public void setPosition(int x, int y) {
@@ -128,8 +134,7 @@ public class LivingBeing {
     // ------------------------------------------------------------------ move
 
     /**
-     * One turn. Polymorphic: masters override it to stay still
-     * The walking itself (obstacles, encounters) needs the Map and is still to be plugged in
+     * One turn. Troopers return for energy or a delivery. Masters override this to stay still.
      */
     public void move() {
         if (isDead() || map == null) return;
@@ -140,24 +145,31 @@ public class LivingBeing {
             //stay until enough EP to avoid going back and forth
             if (energyPoints < Config.LEAVE_SAFEZONE_RATIO * maxEnergyPoints) return;
             returningHome = false;
-        } else if (isLowEnergy()) {
+        } else if (isLowEnergy() || hasDelivery()) {
             returningHome = true;
         }
 
         Direction nextDirection = returningHome ? directionToSafeZone() : randomDirection();
         int distance = randomDistance();
-
         walk(nextDirection, distance);
 
         if (energyPoints == 0) becomeObstacle();
     }
     
+    private boolean hasDelivery() {
+        return teamMaster != null && messages.stream().anyMatch(message -> !teamMaster.knowsMessage(message));
+    }
+
     protected boolean canMoveInDirection(Direction direction) {
         return true;
     }
 
     //last direction slightly rotated (-1, 0 or +1 mostly)
     private Direction randomDirection() {
+        if (lastDirectionTaken == null) {
+            Direction[] headings = Direction.values();
+            return headings[RandomGenerator.nextInt(headings.length)];
+        }
         int modifier = (int) Math.round(RandomGenerator.nextGaussian());
         return lastDirectionTaken.getModifiedValue(modifier);
     }
@@ -282,7 +294,8 @@ public class LivingBeing {
         Collections.shuffle(candidates, RandomGenerator.asRandom());
         int moved = 0;
         for (String m : candidates) {
-            if (moved >= max || to.messages.size() >= to.getMessageCapacity()) break;
+            if (moved >= max) break;
+            if (!to.makeRoomFor(m)) continue;
             to.messages.add(m);
             if (steal) from.messages.remove(m);
             moved++;
@@ -300,7 +313,22 @@ public class LivingBeing {
     /** Read-only snapshot: callers cannot modify the internal list. */
     public List<String> getMessages() { return List.copyOf(messages); }
 
+    public boolean knowsMessage(String message) { return messages.contains(message); }
+
     public void clearMessages() { messages.clear(); }
+
+    // Only discard an archived copy, and only when the incoming message is new to the team.
+    private boolean makeRoomFor(String incoming) {
+        if (messages.size() < getMessageCapacity()) return true;
+        if (teamMaster == null || teamMaster.knowsMessage(incoming)) return false;
+        for (int i = 0; i < messages.size(); i++) {
+            if (teamMaster.knowsMessage(messages.get(i))) {
+                messages.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
 
     //Events of the last step; the display prints then clears them
     public static List<String> drainEvents() {

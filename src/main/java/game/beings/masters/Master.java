@@ -7,6 +7,7 @@ public interface Master {
 
     Color getColor();
     void addMessage(String message);
+    boolean knowsMessage(String message);
     int getNumberOfMessages();
 
     // Called when a live trooper finishes its move in its own safe zone.

@@ -1,25 +1,27 @@
 package game;
 
 import game.beings.Color;
-import game.beings.masters.Master;
-import java.util.EnumMap;
 import game.beings.Elf;
 import game.beings.Goblin;
 import game.beings.Human;
 import game.beings.LivingBeing;
 import game.beings.Orch;
 import game.beings.Roles;
+import game.beings.masters.Master;
 import game.beings.masters.MasterElf;
 import game.beings.masters.MasterGoblin;
 import game.beings.masters.MasterHuman;
 import game.beings.masters.MasterOrch;
 import game.events.EventFactory;
 import game.events.RandomEvent;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Deque;
+import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Game {
 
@@ -30,6 +32,7 @@ public class Game {
     private static final int DELAY_BETWEEN_TURNS_MS = 1000;
 
     private final EnumMap<Color, Master> masters = new EnumMap<>(Color.class);
+    private final EnumMap<Color, Deque<String>> undealtMessages = new EnumMap<>(Color.class);
     
     private ArrayList<LivingBeing> characters;
     private Set<String> messages;
@@ -70,7 +73,7 @@ public class Game {
 
         map.placeRandomRocks(NUMBER_OF_OBSTACLES);
 
-        messages = new HashSet<>();
+        messages = new LinkedHashSet<>();
 
         messages.addAll(List.of(
                 "The autumn wind howls. The Bard won't stop playing minor chords.",
@@ -121,6 +124,13 @@ public class Game {
     
 
     public void startGame() {
+        int turnsPlayed = playTurns(true);
+        display.displayEnd(turnsPlayed);
+        printResult();
+    }
+
+    // Batch checks use the same turns and events as the animated console game.
+    int playTurns(boolean showTurns) {
         int turnsPlayed = 0;
 
         for (int turn = 0; turn < MAX_TURNS; turn++) {
@@ -128,21 +138,26 @@ public class Game {
             turnsPlayed++;
 
             if (!complete && turn == eventTurn) {
-                triggerRandomEvent(turn);
+                RandomEvent event = EventFactory.createRandomEvent();
+                event.apply(map, characters);
+                if (showTurns) display.displayEvent(turn, event);
             }
 
-            display.displayTurn(turn, map);
-            for (Master master : masters.values()) {
-                System.out.printf("%s Master: %d/%d%n",
-                        master.getColor(), master.getScore(), messages.size());
+            if (showTurns) {
+                display.displayTurn(turn, map);
+                for (Master master : masters.values()) {
+                    System.out.printf("%s Master: %d/%d%n",
+                            master.getColor(), master.getScore(), messages.size());
+                }
+            } else {
+                LivingBeing.drainEvents();
             }
 
             if (complete) break;
-            if (turnsPlayed < MAX_TURNS) display.pause();
+            if (showTurns && turnsPlayed < MAX_TURNS) display.pause();
         }
 
-        display.displayEnd(turnsPlayed);
-        printResult();
+        return turnsPlayed;
     }
     
     private void printResult() {
@@ -181,6 +196,7 @@ public class Game {
             );
         }
 
+        RandomGenerator.shuffle(zone);
         return zone;
     }
     
@@ -198,12 +214,41 @@ public class Game {
     }
     
     
-    private void distributeMessages(){
-        Iterator<String> messagesIterator = messages.iterator();
-        int i =0;
-        while(messagesIterator.hasNext()){
-            characters.get(i %characters.size()).addMessage(messagesIterator.next());
-            i++;
+    private void distributeMessages() {
+        List<String> deck = new ArrayList<>(messages);
+        RandomGenerator.shuffle(deck);
+        List<Master> teams = new ArrayList<>(masters.values());
+        RandomGenerator.shuffle(teams);
+        for (int i = 0; i < teams.size(); i++) {
+            Master master = teams.get(i);
+            Color color = master.getColor();
+            List<LivingBeing> team = characters.stream()
+                    .filter(trooper -> trooper.getColor() == color)
+                    .collect(Collectors.toList());
+            for (LivingBeing trooper : team) trooper.setTeamMaster(master);
+
+            // Overlapping hands keep several copies in circulation. Each team must still
+            // learn the missing messages from encounters and deliver all 40 to its Master.
+            int count = Config.STARTING_TEAM_MESSAGES;
+            // Goblins move only one tile; Humans cannot take diagonal shortcuts.
+            if (color == Color.GREEN || color == Color.BLUE) {
+                count += Config.SHORT_RANGE_EXTRA_MESSAGES;
+            }
+            int start = i * deck.size() / teams.size();
+            Deque<String> hand = new ArrayDeque<>();
+            for (int j = 0; j < Math.min(count, deck.size()); j++) {
+                hand.addLast(deck.get((start + j) % deck.size()));
+            }
+            // Deal in rounds, leaving one slot free for an encounter. Smaller rosters
+            // can pick up the rest of their original hand on later visits home.
+            int maxCapacity = team.stream().mapToInt(LivingBeing::getMessageCapacity).max().getAsInt();
+            for (int slot = 1; slot < maxCapacity && !hand.isEmpty(); slot++) {
+                for (LivingBeing trooper : team) {
+                    if (hand.isEmpty()) break;
+                    if (slot < trooper.getMessageCapacity()) trooper.addMessage(hand.removeFirst());
+                }
+            }
+            if (!hand.isEmpty()) undealtMessages.put(color, hand);
         }
     }
     
@@ -222,14 +267,21 @@ public class Game {
                 if (master.getScore() == messages.size()) {
                     return true;
                 }
+                collectUndealtMessages(character);
             }
         }
         return false;
     }
 
-    private void triggerRandomEvent(int turn) {
-        RandomEvent event = EventFactory.createRandomEvent();
-        event.apply(map, characters);
-        display.displayEvent(turn, event);
+    private void collectUndealtMessages(LivingBeing trooper) {
+        Deque<String> reserve = undealtMessages.get(trooper.getColor());
+        if (reserve == null) return;
+        // The Master has just archived this hand. It is safe to carry the next one.
+        trooper.clearMessages();
+        while (!reserve.isEmpty() && trooper.getNumberOfMessages() < trooper.getMessageCapacity()) {
+            trooper.addMessage(reserve.removeFirst());
+        }
+        if (reserve.isEmpty()) undealtMessages.remove(trooper.getColor());
     }
+
 }
